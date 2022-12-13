@@ -1,6 +1,6 @@
 /**
  * Search option sort order
  */
- type SortOrder = 'asc' | 'ASC' | 'desc' | 'DESC';
+type SortOrder = 'asc' | 'ASC' | 'desc' | 'DESC';
 
- export = SortOrder;
+export = SortOrder;

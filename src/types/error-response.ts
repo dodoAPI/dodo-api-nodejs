@@ -1,7 +1,7 @@
-import ErrorMessage = require("./error-message")
+import ErrorMessage = require('./error-message');
 
 type ErrorResponse = {
-    errors: ErrorMessage[]
-}
+  errors: ErrorMessage[];
+};
 
 export = ErrorResponse;
