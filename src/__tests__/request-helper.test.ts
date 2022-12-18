@@ -1,7 +1,9 @@
-import { buildRequestConfig, buildSearchOptions, getRequestConfigCopy } from '../helpers/request-helper';
+import { buildRequestConfig, buildSearchOptions, getRequestConfigCopy, sendRequest } from '../helpers/request-helper';
 import Constants from '../constants/constants';
 import Configuration from '../types/configuration';
 import ListOptions from '../types/list-options';
+import axios, { AxiosError, AxiosHeaders } from 'axios';
+import CustomError from '../types/custom-error';
 
 describe('buildRequestConfig', () => {
   test('should throw an error if API account was not provided', () => {
@@ -162,5 +164,117 @@ describe('buildSearchOptions', () => {
   test.each(cases)('given options: %p should return %p', (options: ListOptions, params: any) => {
     const t = buildSearchOptions(options);
     expect(t).toEqual(params);
+  });
+});
+
+describe('sendRequest', () => {
+  jest.mock('axios');
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  test('should call axios request', async () => {
+    const baseConfig = {
+      baseURL: 'baseURL',
+      auth: {
+        username: 'username',
+        password: 'password',
+      },
+    };
+
+    const requestData = { foo: 'bar' };
+    axios.request = jest.fn().mockResolvedValue({ data: requestData });
+
+    await sendRequest(baseConfig);
+
+    expect(axios.request).toHaveBeenCalledWith(baseConfig);
+  });
+
+  test('should return request data', async () => {
+    const baseConfig = {
+      baseURL: 'baseURL',
+      auth: {
+        username: 'username',
+        password: 'password',
+      },
+    };
+
+    const requestData = { foo: 'bar' };
+    axios.request = jest.fn().mockResolvedValue({ data: requestData });
+
+    const t = await sendRequest(baseConfig);
+
+    expect(t).toBe(requestData);
+  });
+
+  test('should throw custom error and message if it is axios error', async () => {
+    const baseConfig = {
+      baseURL: 'baseURL',
+      auth: {
+        username: 'username',
+        password: 'password',
+      },
+    };
+
+    axios.request = jest.fn().mockImplementation(() => {
+      throw new AxiosError();
+    });
+
+    const t = async () => sendRequest(baseConfig);
+
+    await expect(t).rejects.toThrow(Constants.messages.response.error);
+    await expect(t).rejects.toThrow(CustomError);
+  });
+
+  test('should throw custom error and message if it is axios error', async () => {
+    const baseConfig = {
+      baseURL: 'baseURL',
+      auth: {
+        username: 'username',
+        password: 'password',
+      },
+    };
+
+    const responseData: any = { foo: 'bar' };
+
+    axios.request = jest.fn().mockImplementation(() => {
+      throw new AxiosError('error', undefined, undefined, undefined, {
+        status: 1,
+        statusText: 'error',
+        config: {},
+        headers: {},
+        data: responseData,
+      });
+    });
+
+    let t: any = null;
+    try {
+      await sendRequest(baseConfig);
+    } catch (err) {
+      t = err;
+    }
+
+    expect(t).not.toBeNull();
+    expect(t.response).toBe(responseData);
+  });
+
+  test('should throw same error if it is not axios error', async () => {
+    const baseConfig = {
+      baseURL: 'baseURL',
+      auth: {
+        username: 'username',
+        password: 'password',
+      },
+    };
+
+    axios.request = jest.fn().mockImplementation(() => {
+      throw new Error('error');
+    });
+
+    const t = async () => sendRequest(baseConfig);
+
+    await expect(t).rejects.toThrow(Error);
+    await expect(t).rejects.toThrow('error');
   });
 });

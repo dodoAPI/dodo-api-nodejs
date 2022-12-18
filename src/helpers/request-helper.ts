@@ -1,3 +1,5 @@
+import axios from 'axios';
+import CustomError from '../types/custom-error';
 import Constants from '../constants/constants';
 import Configuration from '../types/configuration';
 import ListOptions from '../types/list-options';
@@ -57,4 +59,16 @@ const buildSearchOptions = (options?: ListOptions) => {
   return params;
 };
 
-export { buildRequestConfig, getRequestConfigCopy, buildSearchOptions };
+const sendRequest = async <T>(config: any) => {
+  try {
+    const res = await axios.request<T>(config);
+    return res.data;
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      throw new CustomError(Constants.messages.response.error, err.response?.data);
+    }
+    throw err;
+  }
+};
+
+export { buildRequestConfig, getRequestConfigCopy, buildSearchOptions, sendRequest };

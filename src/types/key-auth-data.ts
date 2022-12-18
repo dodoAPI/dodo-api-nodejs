@@ -12,7 +12,6 @@ type KeyAuthData = {
    * Auth key value
    */
   value: string;
-
   /**
    * Auth key edded to ('HEADER' | 'QUERY')
    */

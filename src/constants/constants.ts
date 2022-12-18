@@ -46,6 +46,15 @@ const Constants = {
    */
   messages: {
     /**
+     * Response message constants
+     */
+    response: {
+      /**
+       * Response error
+       */
+      error: 'An error occured while processing the request',
+    },
+    /**
      * Configuration message constants
      */
     configuration: {
